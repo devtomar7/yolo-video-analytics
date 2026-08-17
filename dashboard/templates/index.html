@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>YOLO Video Analytics</title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #111827;
+            color: white;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: #9ca3af;
+            margin-bottom: 30px;
+        }
+
+        .cards {
+            display: grid;
+            grid-template-columns:
+                repeat(4, 1fr);
+
+            gap: 20px;
+
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: #1f2937;
+            padding: 25px;
+            border-radius: 12px;
+        }
+
+        .card h3 {
+            color: #9ca3af;
+            font-size: 15px;
+            margin-bottom: 10px;
+        }
+
+        .value {
+            font-size: 32px;
+            font-weight: bold;
+        }
+
+        .green {
+            color: #22c55e;
+        }
+
+        .red {
+            color: #ef4444;
+        }
+
+        .yellow {
+            color: #facc15;
+        }
+
+        .blue {
+            color: #60a5fa;
+        }
+
+        .section {
+            background: #1f2937;
+            padding: 25px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+
+        .section h2 {
+            margin-bottom: 20px;
+        }
+
+        video {
+            width: 100%;
+            max-height: 650px;
+            background: black;
+            border-radius: 10px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #374151;
+        }
+
+        th {
+            color: #9ca3af;
+        }
+
+        .status {
+            margin-bottom: 20px;
+            color: #22c55e;
+        }
+
+        @media(max-width: 900px) {
+
+            .cards {
+                grid-template-columns:
+                    repeat(2, 1fr);
+            }
+
+        }
+
+        @media(max-width: 600px) {
+
+            .cards {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding: 15px;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+<div class="container">
+
+    <h1>YOLO Video Analytics Dashboard</h1>
+
+    <p class="subtitle">
+        Computer Vision Object Detection & Tracking
+    </p>
+
+    <div
+        id="status"
+        class="status"
+    >
+        Loading analytics...
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- SUMMARY CARDS -->
+    <!-- ================================= -->
+
+    <div class="cards">
+
+        <div class="card">
+
+            <h3>
+                Unique Objects
+            </h3>
+
+            <div
+                id="uniqueObjects"
+                class="value blue"
+            >
+                -
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>
+                Entered
+            </h3>
+
+            <div
+                id="entered"
+                class="value green"
+            >
+                -
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>
+                Exited
+            </h3>
+
+            <div
+                id="exited"
+                class="value red"
+            >
+                -
+            </div>
+
+        </div>
+
+
+        <div class="card">
+
+            <h3>
+                Total Crossings
+            </h3>
+
+            <div
+                id="crossings"
+                class="value yellow"
+            >
+                -
+            </div>
+
+        </div>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- VIDEO -->
+    <!-- ================================= -->
+
+    <div class="section">
+
+        <h2>
+            Processed Video
+        </h2>
+
+        <video
+            controls
+            preload="metadata"
+        >
+
+            <source
+                src="/video"
+                type="video/mp4"
+            >
+
+            Your browser does not support video.
+
+        </video>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- CLASS STATISTICS -->
+    <!-- ================================= -->
+
+    <div class="section">
+
+        <h2>
+            Object Statistics
+        </h2>
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>
+                        Object Class
+                    </th>
+
+                    <th>
+                        Unique Objects
+                    </th>
+
+                    <th>
+                        Entered
+                    </th>
+
+                    <th>
+                        Exited
+                    </th>
+
+                </tr>
+
+            </thead>
+
+            <tbody id="classTable">
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    <!-- ================================= -->
+    <!-- PROCESSING INFORMATION -->
+    <!-- ================================= -->
+
+    <div class="section">
+
+        <h2>
+            Processing Information
+        </h2>
+
+        <table>
+
+            <tbody>
+
+                <tr>
+
+                    <td>
+                        Resolution
+                    </td>
+
+                    <td id="resolution">
+                        -
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+                        Video FPS
+                    </td>
+
+                    <td id="videoFPS">
+                        -
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+                        Duration
+                    </td>
+
+                    <td id="duration">
+                        -
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+                        Frames Processed
+                    </td>
+
+                    <td id="frames">
+                        -
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+                        Processing FPS
+                    </td>
+
+                    <td id="processingFPS">
+                        -
+                    </td>
+
+                </tr>
+
+                <tr>
+
+                    <td>
+                        Processing Time
+                    </td>
+
+                    <td id="processingTime">
+                        -
+                    </td>
+
+                </tr>
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+async function loadAnalytics() {
+
+    try {
+
+        const response =
+            await fetch("/api/analytics");
+
+        const data =
+            await response.json();
+
+
+        if (data.error) {
+
+            document.getElementById(
+                "status"
+            ).textContent =
+                data.error;
+
+            return;
+
+        }
+
+
+        // ================================
+        // SUMMARY
+        // ================================
+
+        const analytics =
+            data.analytics;
+
+
+        document.getElementById(
+            "uniqueObjects"
+        ).textContent =
+            analytics.unique_objects;
+
+
+        document.getElementById(
+            "entered"
+        ).textContent =
+            analytics.entered;
+
+
+        document.getElementById(
+            "exited"
+        ).textContent =
+            analytics.exited;
+
+
+        document.getElementById(
+            "crossings"
+        ).textContent =
+            analytics.total_crossings;
+
+
+        // ================================
+        // VIDEO INFORMATION
+        // ================================
+
+        const video =
+            data.video;
+
+
+        document.getElementById(
+            "resolution"
+        ).textContent =
+            `${video.width} × ${video.height}`;
+
+
+        document.getElementById(
+            "videoFPS"
+        ).textContent =
+            video.fps.toFixed(2);
+
+
+        document.getElementById(
+            "duration"
+        ).textContent =
+            `${video.duration_seconds} sec`;
+
+
+        // ================================
+        // PROCESSING INFORMATION
+        // ================================
+
+        const processing =
+            data.processing;
+
+
+        document.getElementById(
+            "frames"
+        ).textContent =
+            processing.frames_processed;
+
+
+        document.getElementById(
+            "processingFPS"
+        ).textContent =
+            processing.average_processing_fps;
+
+
+        document.getElementById(
+            "processingTime"
+        ).textContent =
+            `${processing.processing_time_seconds} sec`;
+
+
+        // ================================
+        // CLASS STATISTICS
+        // ================================
+
+        const uniqueClasses =
+            data.class_statistics
+                .unique_objects_by_class;
+
+
+        const enteredClasses =
+            data.class_statistics
+                .entered_by_class;
+
+
+        const exitedClasses =
+            data.class_statistics
+                .exited_by_class;
+
+
+        const allClasses =
+            new Set([
+
+                ...Object.keys(
+                    uniqueClasses
+                ),
+
+                ...Object.keys(
+                    enteredClasses
+                ),
+
+                ...Object.keys(
+                    exitedClasses
+                )
+
+            ]);
+
+
+        const table =
+            document.getElementById(
+                "classTable"
+            );
+
+
+        table.innerHTML = "";
+
+
+        allClasses.forEach(
+            className => {
+
+                const row =
+                    document.createElement(
+                        "tr"
+                    );
+
+
+                row.innerHTML = `
+
+                    <td>
+                        ${className}
+                    </td>
+
+                    <td>
+                        ${uniqueClasses[className] || 0}
+                    </td>
+
+                    <td>
+                        ${enteredClasses[className] || 0}
+                    </td>
+
+                    <td>
+                        ${exitedClasses[className] || 0}
+                    </td>
+
+                `;
+
+
+                table.appendChild(row);
+
+            }
+        );
+
+
+        document.getElementById(
+            "status"
+        ).textContent =
+            "Analytics loaded successfully";
+
+
+    } catch (error) {
+
+        console.error(error);
+
+        document.getElementById(
+            "status"
+        ).textContent =
+            "Unable to load analytics.";
+
+    }
+
+}
+
+
+loadAnalytics();
+
+</script>
+
+
+</body>
+
+</html>
